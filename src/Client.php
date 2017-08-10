@@ -4,28 +4,63 @@ namespace Loevgaard\Linkmobility;
 use Assert\Assert;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
-use Loevgaard\Linkmobility\Payload\Message;
+use Psr\Http\Message\ResponseInterface;
+use Loevgaard\Linkmobility\Payload\Message as MessagePayload;
 
 class Client
 {
+    /**
+     * The API key used for making requests
+     *
+     * @var string
+     */
     protected $apiKey;
+
+    /**
+     * The base url used for making requests
+     *
+     * @var string
+     */
     protected $baseUrl = 'https://api.linkmobility.dk/v2';
 
     /**
+     * The HTTP client used for making requests
+     *
      * @var GuzzleClientInterface
      */
     protected $httpClient;
 
-    public function __construct($apiKey)
+    /**
+     * Contains the last response object
+     *
+     * @var ResponseInterface
+     */
+    protected $lastResponse;
+
+    public function __construct(string $apiKey)
     {
         $this->apiKey = $apiKey;
     }
 
-    public function request($method, $uri, $options) {
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param array $options
+     * @return mixed
+     */
+    public function request(string $method, string $uri, array $options)
+    {
         $url = $this->baseUrl . $uri;
-
         $client = $this->getHttpClient();
-        $client->request($method, $url, $options);
+        $options = array_merge($options, [
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'verify' => false
+        ]);
+        $this->lastResponse = $client->request($method, $url, $options);
+
+        return \GuzzleHttp\json_decode((string)$this->lastResponse->getBody());
     }
 
     /**
@@ -35,13 +70,18 @@ class Client
      */
 
     /**
-     * @param array $payload
+     * Will create a new message
+     *
+     * @param MessagePayload $payload
+     * @return \stdClass
      */
-    public function postMessage($payload) {
-        if($payload instanceof Message) {
+    public function postMessage(MessagePayload $payload) : \stdClass
+    {
+        if($payload instanceof MessagePayload) {
             $payload = $payload->getPayload();
         }
-        $this->request('post', '/message.json', [
+
+        return $this->request('post', '/message.json', [
             'json' => $payload
         ]);
     }
@@ -75,7 +115,7 @@ class Client
     /**
      * @return GuzzleClientInterface
      */
-    public function getHttpClient()
+    public function getHttpClient() : GuzzleClientInterface
     {
         if(!$this->httpClient) {
             $this->httpClient = new GuzzleClient();
@@ -87,10 +127,27 @@ class Client
      * @param GuzzleClientInterface $httpClient
      * @return Client
      */
-    public function setHttpClient(GuzzleClientInterface $httpClient)
+    public function setHttpClient(GuzzleClientInterface $httpClient) : Client
     {
         $this->httpClient = $httpClient;
         return $this;
     }
 
+    /**
+     * @return ResponseInterface
+     */
+    public function getLastResponse() : ResponseInterface
+    {
+        return $this->lastResponse;
+    }
+
+    /**
+     * @param ResponseInterface $lastResponse
+     * @return Client
+     */
+    public function setLastResponse(ResponseInterface $lastResponse) : Client
+    {
+        $this->lastResponse = $lastResponse;
+        return $this;
+    }
 }

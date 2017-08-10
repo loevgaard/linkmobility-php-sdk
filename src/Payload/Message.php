@@ -43,7 +43,7 @@ class Message implements PayloadInterface
     const FORMAT_MMS = 'MMS'; // Array of attachments to send as MMS To send a presentation, the first attachment needs to be a SMIL document with the extension .smil Sender should be a valid shortcode
 
     /**
-     * @var string
+     * @var array
      */
     protected $recipients;
 
@@ -162,6 +162,11 @@ class Message implements PayloadInterface
      */
     protected $revenueText;
 
+    public function __construct()
+    {
+        $this->recipients = [];
+    }
+
     /**
      * @inheritdoc
      */
@@ -206,7 +211,7 @@ class Message implements PayloadInterface
     public function validate(): bool
     {
         // required properties
-        Assert::that($this->recipients)->string();
+        Assert::that($this->recipients)->isArray()->notEmpty();
         Assert::that($this->sender)->string();
         Assert::that($this->message)->string();
 
@@ -234,6 +239,12 @@ class Message implements PayloadInterface
         Assert::thatNullOr($this->revenueText)->string();
 
         return true;
+    }
+
+    public function addRecipient($recipient) : Message
+    {
+        $this->recipients[] = $recipient;
+        return $this;
     }
 
     /**
