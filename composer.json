@@ -1,19 +1,21 @@
 {
-    "name": ":vendor/:package_name",
+    "name": "loevgaard/linkmobility-php-sdk",
     "type": "library",
-    "description": ":package_description",
+    "description": "PHP SDK for Linkmobility API",
     "keywords": [
-        ":vendor",
-        ":package_name"
+        "linkmobility",
+        "php",
+        "sms",
+        "sms gateway",
+        "sdk"
     ],
-    "homepage": "https://github.com/:vendor/:package_name",
+    "homepage": "https://github.com/loevgaard/linkmobility-php-sdk",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": ":author_email",
-            "homepage": ":author_website",
-            "role": "Developer"
+            "name": "Joachim Løvgaard",
+            "email": "joachim@loevgaard.dk",
+            "homepage": "http://www.loevgaard.dk",
         }
     ],
     "require": {
@@ -25,12 +27,12 @@
     },
     "autoload": {
         "psr-4": {
-            ":vendor\\:package_name\\": "src"
+            "Loevgaard\\Linkmobility\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            ":vendor\\:package_name\\": "tests"
+            "Loevgaard\\Linkmobility\\": "tests"
         }
     },
     "scripts": {
