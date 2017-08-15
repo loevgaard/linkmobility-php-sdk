@@ -107,7 +107,8 @@ class MessageTest extends TestCase
         $this->assertEquals($val, $message->getRevenueText());
     }
 
-    public function testGetPayload() {
+    public function testGetPayload()
+    {
         $sendTimeObject = new \DateTimeImmutable();
 
         $payload = [
@@ -179,7 +180,8 @@ class MessageTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testEmptyMessage() {
+    public function testEmptyMessage()
+    {
         $message = $this->getValidMessage();
 
         $message->setMessage('');
@@ -188,7 +190,8 @@ class MessageTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testEmptySender() {
+    public function testEmptySender()
+    {
         $message = $this->getValidMessage();
 
         $message->setSender('');
@@ -197,7 +200,8 @@ class MessageTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testLongSender() {
+    public function testLongSender()
+    {
         $message = $this->getValidMessage();
 
         $message->setSender('very long sender id');
@@ -206,7 +210,8 @@ class MessageTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testLongNumericSender() {
+    public function testLongNumericSender()
+    {
         $message = $this->getValidMessage();
 
         $message->setSender('+45112233445566778899');
@@ -214,7 +219,8 @@ class MessageTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testWrongLongNumericSender() {
+    public function testWrongLongNumericSender()
+    {
         $message = $this->getValidMessage();
 
         $message->setSender('45112233445566778899');
@@ -223,7 +229,8 @@ class MessageTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testValidRecipients() {
+    public function testValidRecipients()
+    {
         $message = $this->getValidMessage();
 
         $message->setRecipients([
@@ -234,7 +241,8 @@ class MessageTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testAddRecipient() {
+    public function testAddRecipient()
+    {
         $message = new Message();
         $message->addRecipient('+4511223344');
 
@@ -246,7 +254,8 @@ class MessageTest extends TestCase
     /**
      * @return Message
      */
-    private function getValidMessage() {
+    private function getValidMessage()
+    {
         $message = new Message();
         $message
             ->setMessage('message')

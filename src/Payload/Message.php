@@ -239,7 +239,7 @@ class Message implements PayloadInterface
             'revenuetext' => $this->revenueText
         ];
 
-        return array_filter($payload, function($elm) {
+        return array_filter($payload, function ($elm) {
             return !is_null($elm);
         });
     }
@@ -252,14 +252,13 @@ class Message implements PayloadInterface
         $recipientPattern = '/^(\+|c)?[0-9]+$/i';
 
         try {
-
             // required properties
             Assert::that($this->recipients)->isArray()->notEmpty();
             Assert::thatAll($this->recipients)->notEmpty()->regex($recipientPattern);
             Assert::that($this->sender)->string()->notEmpty();
 
             // if the sender is alphanumeric, test the length
-            if(!preg_match('/^\+[0-9]+$/i', $this->sender)) {
+            if (!preg_match('/^\+[0-9]+$/i', $this->sender)) {
                 Assert::that($this->sender)->maxLength(11);
             }
             Assert::that($this->message)->string()->notEmpty();
