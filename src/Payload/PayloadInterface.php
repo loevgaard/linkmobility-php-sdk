@@ -1,6 +1,8 @@
 <?php
 namespace Loevgaard\Linkmobility\Payload;
 
+use Loevgaard\Linkmobility\Exception\InvalidPayloadException;
+
 interface PayloadInterface
 {
     /**
@@ -11,10 +13,10 @@ interface PayloadInterface
     public function getPayload() : array;
 
     /**
-     * Will return true if payload is valid
-     * It will follow
+     * Must throw InvalidPayloadException if not valid
      *
-     * @return boolean
+     * @throws InvalidPayloadException
+     * @return void
      */
-    public function validate() : bool;
+    public function validate() : void;
 }

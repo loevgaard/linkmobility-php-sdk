@@ -3,6 +3,7 @@ namespace Loevgaard\Linkmobility\Payload;
 
 use Assert\Assert;
 use Loevgaard\Linkmobility\Exception\InvalidPayloadException;
+use Assert\AssertionFailedException;
 
 /**
  * Class Message
@@ -140,7 +141,7 @@ class Message implements PayloadInterface
     protected $validity;
 
     /**
-     * @var string
+     * @var integer
      */
     protected $contentType;
 
@@ -155,7 +156,7 @@ class Message implements PayloadInterface
     protected $udh;
 
     /**
-     * @var string
+     * @var array
      */
     protected $attachment;
 
@@ -170,12 +171,12 @@ class Message implements PayloadInterface
     protected $pushExpire;
 
     /**
-     * @var string
+     * @var array
      */
     protected $filter;
 
     /**
-     * @var string
+     * @var array
      */
     protected $segmentation;
 
@@ -209,11 +210,10 @@ class Message implements PayloadInterface
      */
     public function getPayload(): array
     {
-        if (!$this->validate()) {
-            throw new InvalidPayloadException('The payload is invalid');
-        }
+        $this->validate();
+
         $payload = [
-            'recipients' => $this->recipients,
+            'recipients' => join(',', $this->recipients),
             'sender' => $this->sender,
             'message' => $this->message,
             'status' => $this->status,
@@ -239,43 +239,56 @@ class Message implements PayloadInterface
             'revenuetext' => $this->revenueText
         ];
 
-        return array_filter($payload);
+        return array_filter($payload, function($elm) {
+            return !is_null($elm);
+        });
     }
 
     /**
      * @inheritdoc
      */
-    public function validate(): bool
+    public function validate(): void
     {
-        // required properties
-        Assert::that($this->recipients)->isArray()->notEmpty();
-        Assert::that($this->sender)->string();
-        Assert::that($this->message)->string();
+        $recipientPattern = '/^(\+|c)?[0-9]+$/i';
 
-        // optional properties
-        Assert::thatNullOr($this->status)->boolean();
-        Assert::thatNullOr($this->statusUrl)->url();
-        Assert::thatNullOr($this->returnData)->string();
-        Assert::thatNullOr($this->class)->integer()->inArray(static::getClasses());
-        Assert::thatNullOr($this->sendTime)->isInstanceOf(\DateTimeInterface::class);
-        Assert::thatNullOr($this->price)->integer()->greaterOrEqualThan(100);
-        Assert::thatNullOr($this->charity)->boolean();
-        Assert::thatNullOr($this->invoiceText)->string();
-        Assert::thatNullOr($this->validity)->integer();
-        Assert::thatNullOr($this->contentType)->integer()->inArray(static::getContentTypes());
-        Assert::thatNullOr($this->format)->string()->inArray(static::getFormats());
-        Assert::thatNullOr($this->udh)->string();
-        Assert::thatNullOr($this->attachment)->isArray()->notEmpty();
-        Assert::thatNullOr($this->pushUrl)->url();
-        Assert::thatNullOr($this->pushExpire)->string();
-        Assert::thatNullOr($this->filter)->isArray()->notEmpty();
-        Assert::thatNullOr($this->segmentation)->isArray()->notEmpty();
-        Assert::thatNullOr($this->pid)->integer();
-        Assert::thatNullOr($this->advanced)->string();
-        Assert::thatNullOr($this->protocol)->string();
-        Assert::thatNullOr($this->revenueText)->string();
+        try {
 
-        return true;
+            // required properties
+            Assert::that($this->recipients)->isArray()->notEmpty();
+            Assert::thatAll($this->recipients)->notEmpty()->regex($recipientPattern);
+            Assert::that($this->sender)->string()->notEmpty();
+
+            // if the sender is alphanumeric, test the length
+            if(!preg_match('/^\+[0-9]+$/i', $this->sender)) {
+                Assert::that($this->sender)->maxLength(11);
+            }
+            Assert::that($this->message)->string()->notEmpty();
+
+            // optional properties
+            Assert::thatNullOr($this->status)->boolean();
+            Assert::thatNullOr($this->statusUrl)->url();
+            Assert::thatNullOr($this->returnData)->string()->notEmpty();
+            Assert::thatNullOr($this->class)->integer()->inArray(static::getClasses());
+            Assert::thatNullOr($this->sendTime)->isInstanceOf(\DateTimeInterface::class);
+            Assert::thatNullOr($this->price)->integer()->greaterOrEqualThan(100);
+            Assert::thatNullOr($this->charity)->boolean();
+            Assert::thatNullOr($this->invoiceText)->string()->notEmpty();
+            Assert::thatNullOr($this->validity)->integer();
+            Assert::thatNullOr($this->contentType)->integer()->inArray(static::getContentTypes());
+            Assert::thatNullOr($this->format)->string()->inArray(static::getFormats());
+            Assert::thatNullOr($this->udh)->string()->notEmpty();
+            Assert::thatNullOr($this->attachment)->isArray()->notEmpty();
+            Assert::thatNullOr($this->pushUrl)->url();
+            Assert::thatNullOr($this->pushExpire)->string()->notEmpty();
+            Assert::thatNullOr($this->filter)->isArray()->notEmpty();
+            Assert::thatNullOr($this->segmentation)->isArray()->notEmpty();
+            Assert::thatNullOr($this->pid)->integer();
+            Assert::thatNullOr($this->advanced)->string()->notEmpty();
+            Assert::thatNullOr($this->protocol)->string()->notEmpty();
+            Assert::thatNullOr($this->revenueText)->string()->notEmpty();
+        } catch (AssertionFailedException $e) {
+            throw new InvalidPayloadException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     public function addRecipient($recipient) : Message
@@ -334,5 +347,441 @@ class Message implements PayloadInterface
             static::FORMAT_WAPPUSH,
             static::FORMAT_MMS
         ];
+    }
+
+    /*
+     * Getters / Setters
+     */
+
+    /**
+     * @return array
+     */
+    public function getRecipients(): array
+    {
+        return $this->recipients;
+    }
+
+    /**
+     * @param array $recipients
+     * @return Message
+     */
+    public function setRecipients(array $recipients)
+    {
+        $this->recipients = $recipients;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSender(): string
+    {
+        return $this->sender;
+    }
+
+    /**
+     * @param string $sender
+     * @return Message
+     */
+    public function setSender(string $sender)
+    {
+        $this->sender = $sender;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
+
+    /**
+     * @param string $message
+     * @return Message
+     */
+    public function setMessage(string $message)
+    {
+        $this->message = $message;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isStatus(): bool
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param bool $status
+     * @return Message
+     */
+    public function setStatus(bool $status)
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStatusUrl(): string
+    {
+        return $this->statusUrl;
+    }
+
+    /**
+     * @param string $statusUrl
+     * @return Message
+     */
+    public function setStatusUrl(string $statusUrl)
+    {
+        $this->statusUrl = $statusUrl;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getReturnData(): string
+    {
+        return $this->returnData;
+    }
+
+    /**
+     * @param string $returnData
+     * @return Message
+     */
+    public function setReturnData(string $returnData)
+    {
+        $this->returnData = $returnData;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getClass(): int
+    {
+        return $this->class;
+    }
+
+    /**
+     * @param int $class
+     * @return Message
+     */
+    public function setClass(int $class)
+    {
+        $this->class = $class;
+        return $this;
+    }
+
+    /**
+     * @return \DateTimeInterface
+     */
+    public function getSendTime(): \DateTimeInterface
+    {
+        return $this->sendTime;
+    }
+
+    /**
+     * @param \DateTimeInterface $sendTime
+     * @return Message
+     */
+    public function setSendTime(\DateTimeInterface $sendTime)
+    {
+        $this->sendTime = $sendTime;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPrice(): int
+    {
+        return $this->price;
+    }
+
+    /**
+     * @param int $price
+     * @return Message
+     */
+    public function setPrice(int $price)
+    {
+        $this->price = $price;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCharity(): bool
+    {
+        return $this->charity;
+    }
+
+    /**
+     * @param bool $charity
+     * @return Message
+     */
+    public function setCharity(bool $charity)
+    {
+        $this->charity = $charity;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getInvoiceText(): string
+    {
+        return $this->invoiceText;
+    }
+
+    /**
+     * @param string $invoiceText
+     * @return Message
+     */
+    public function setInvoiceText(string $invoiceText)
+    {
+        $this->invoiceText = $invoiceText;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getValidity(): int
+    {
+        return $this->validity;
+    }
+
+    /**
+     * @param int $validity
+     * @return Message
+     */
+    public function setValidity(int $validity)
+    {
+        $this->validity = $validity;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getContentType(): int
+    {
+        return $this->contentType;
+    }
+
+    /**
+     * @param int $contentType
+     * @return Message
+     */
+    public function setContentType(int $contentType)
+    {
+        $this->contentType = $contentType;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFormat(): string
+    {
+        return $this->format;
+    }
+
+    /**
+     * @param string $format
+     * @return Message
+     */
+    public function setFormat(string $format)
+    {
+        $this->format = $format;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUdh(): string
+    {
+        return $this->udh;
+    }
+
+    /**
+     * @param string $udh
+     * @return Message
+     */
+    public function setUdh(string $udh)
+    {
+        $this->udh = $udh;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAttachment(): array
+    {
+        return $this->attachment;
+    }
+
+    /**
+     * @param array $attachment
+     * @return Message
+     */
+    public function setAttachment(array $attachment)
+    {
+        $this->attachment = $attachment;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPushUrl(): string
+    {
+        return $this->pushUrl;
+    }
+
+    /**
+     * @param string $pushUrl
+     * @return Message
+     */
+    public function setPushUrl(string $pushUrl)
+    {
+        $this->pushUrl = $pushUrl;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPushExpire(): string
+    {
+        return $this->pushExpire;
+    }
+
+    /**
+     * @param string $pushExpire
+     * @return Message
+     */
+    public function setPushExpire(string $pushExpire)
+    {
+        $this->pushExpire = $pushExpire;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFilter(): array
+    {
+        return $this->filter;
+    }
+
+    /**
+     * @param array $filter
+     * @return Message
+     */
+    public function setFilter(array $filter)
+    {
+        $this->filter = $filter;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSegmentation(): array
+    {
+        return $this->segmentation;
+    }
+
+    /**
+     * @param array $segmentation
+     * @return Message
+     */
+    public function setSegmentation(array $segmentation)
+    {
+        $this->segmentation = $segmentation;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPid(): int
+    {
+        return $this->pid;
+    }
+
+    /**
+     * @param int $pid
+     * @return Message
+     */
+    public function setPid(int $pid)
+    {
+        $this->pid = $pid;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAdvanced(): string
+    {
+        return $this->advanced;
+    }
+
+    /**
+     * @param string $advanced
+     * @return Message
+     */
+    public function setAdvanced(string $advanced)
+    {
+        $this->advanced = $advanced;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProtocol(): string
+    {
+        return $this->protocol;
+    }
+
+    /**
+     * @param string $protocol
+     * @return Message
+     */
+    public function setProtocol(string $protocol)
+    {
+        $this->protocol = $protocol;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRevenueText(): string
+    {
+        return $this->revenueText;
+    }
+
+    /**
+     * @param string $revenueText
+     * @return Message
+     */
+    public function setRevenueText(string $revenueText)
+    {
+        $this->revenueText = $revenueText;
+        return $this;
     }
 }
