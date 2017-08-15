@@ -57,7 +57,7 @@ class Client
             ],
             'verify' => false
         ]);
-        $this->lastResponse = $client->request($method, $this->baseUrl . $uri, $options);
+        $this->lastResponse = $client->request($method, $this->baseUrl . $uri.'?apikey='.$this->apiKey, $options);
 
         return \GuzzleHttp\json_decode((string)$this->lastResponse->getBody());
     }
