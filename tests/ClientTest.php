@@ -29,7 +29,7 @@ class ClientTest extends TestCase
         // tests last response
         $returnObj = new \stdClass();
         $returnObj->data = 'data';
-        $response = new Response(200, [], json_encode($returnObj));
+        $response = new Response(200, [], \GuzzleHttp\json_encode($returnObj));
         $mock = new MockHandler([$response]);
         $handler = HandlerStack::create($mock);
 
@@ -66,10 +66,10 @@ class ClientTest extends TestCase
         ];
 
         // convert to \stdClass
-        $responseObject = json_decode(json_encode($responseArray));
+        $responseObject = \GuzzleHttp\json_decode(\GuzzleHttp\json_encode($responseArray));
 
         $mock = new MockHandler([
-            new Response(200, [], json_encode($responseObject)),
+            new Response(200, [], \GuzzleHttp\json_encode($responseObject)),
         ]);
         $handler = HandlerStack::create($mock);
 
