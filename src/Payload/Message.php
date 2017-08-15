@@ -11,10 +11,26 @@ use Loevgaard\Linkmobility\Exception\InvalidPayloadException;
  */
 class Message implements PayloadInterface
 {
-    const CLASS_0 = 0; // Show message directly on phone. The message is not saved on the phone. (Also known as flash messages)
-    const CLASS_1 = 1; // Save message in phone memory. Either on the phone or in SIM.
-    const CLASS_2 = 2; // Message contains SIM data.
-    const CLASS_3 = 3; // Message contains info that indicate that it should be sent to external units, normally used by terminal equipment.
+    /*
+     * Show message directly on phone. The message is not saved on the phone. (Also known as flash messages)
+     */
+    const CLASS_0 = 0;
+
+    /*
+     * Save message in phone memory. Either on the phone or in SIM.
+     */
+    const CLASS_1 = 1;
+
+    /*
+     * Message contains SIM data.
+     */
+    const CLASS_2 = 2;
+
+    /*
+     * Message contains info that indicate that it should be
+     * sent to external units, normally used by terminal equipment.
+     */
+    const CLASS_3 = 3;
 
     /**
      * Note! These content types currently only apply to danish shortcodes
@@ -36,11 +52,32 @@ class Message implements PayloadInterface
     const CONTENT_TYPE_14 = 14; // Indsamlinger / donationer (ikke humanitære organisationer)
     const CONTENT_TYPE_15 = 15; // Lotteri (moms fri)
 
-    const FORMAT_GSM = 'GSM'; // Send normal message (160 chars, but if more than 160 chars, 153 chars per part message)
-    const FORMAT_UNICODE = 'UNICODE'; // To send speciality chars like chinese letters. A normal message is 160 chars, but if you use unicode each message can only hold 70 chars (But if more than 70 chars, 67 chars per part message)
-    const FORMAT_BINARY = 'BINARY'; // Send a binary message body in hex and define udh
-    const FORMAT_WAPPUSH = 'WAPPUSH'; // Send a link that is opened on the phone
-    const FORMAT_MMS = 'MMS'; // Array of attachments to send as MMS To send a presentation, the first attachment needs to be a SMIL document with the extension .smil Sender should be a valid shortcode
+    /*
+     * Send normal message (160 chars, but if more than 160 chars, 153 chars per part message)
+     */
+    const FORMAT_GSM = 'GSM';
+
+    /*
+     * To send speciality chars like chinese letters. A normal message is 160 chars, but ifyou use
+     * unicode each message can only hold 70 chars (But if more than 70 chars, 67 chars per part message)
+     */
+    const FORMAT_UNICODE = 'UNICODE';
+
+    /*
+     * Send a binary message body in hex and define udh
+     */
+    const FORMAT_BINARY = 'BINARY';
+
+    /*
+     * Send a link that is opened on the phone
+     */
+    const FORMAT_WAPPUSH = 'WAPPUSH';
+
+    /*
+     * Array of attachments to send as MMS To send a presentation, the first attachment
+     * needs to be a SMIL document with the extension .smil Sender should be a valid shortcode
+     */
+    const FORMAT_MMS = 'MMS';
 
     /**
      * @var array
@@ -172,7 +209,7 @@ class Message implements PayloadInterface
      */
     public function getPayload(): array
     {
-        if(!$this->validate()) {
+        if (!$this->validate()) {
             throw new InvalidPayloadException('The payload is invalid');
         }
         $payload = [
@@ -298,6 +335,4 @@ class Message implements PayloadInterface
             static::FORMAT_MMS
         ];
     }
-
-
 }

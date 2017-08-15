@@ -10,7 +10,7 @@
          processIsolation="false"
          stopOnFailure="false">
     <testsuites>
-        <testsuite name="loevgaard Test Suite">
+        <testsuite name="Linkmobility PHP SDK Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>

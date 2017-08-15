@@ -50,7 +50,6 @@ class Client
      */
     public function request(string $method, string $uri, array $options)
     {
-        $url = $this->baseUrl . $uri;
         $client = $this->getHttpClient();
         $options = array_merge($options, [
             'headers' => [
@@ -58,7 +57,7 @@ class Client
             ],
             'verify' => false
         ]);
-        $this->lastResponse = $client->request($method, $url, $options);
+        $this->lastResponse = $client->request($method, $this->baseUrl . $uri, $options);
 
         return \GuzzleHttp\json_decode((string)$this->lastResponse->getBody());
     }
@@ -77,12 +76,8 @@ class Client
      */
     public function postMessage(MessagePayload $payload) : \stdClass
     {
-        if($payload instanceof MessagePayload) {
-            $payload = $payload->getPayload();
-        }
-
         return $this->request('post', '/message.json', [
-            'json' => $payload
+            'json' => $payload->getPayload()
         ]);
     }
 
@@ -117,7 +112,7 @@ class Client
      */
     public function getHttpClient() : GuzzleClientInterface
     {
-        if(!$this->httpClient) {
+        if (!$this->httpClient) {
             $this->httpClient = new GuzzleClient();
         }
         return $this->httpClient;
@@ -134,20 +129,12 @@ class Client
     }
 
     /**
+     * Returns the latest response
+     *
      * @return ResponseInterface
      */
     public function getLastResponse() : ResponseInterface
     {
         return $this->lastResponse;
-    }
-
-    /**
-     * @param ResponseInterface $lastResponse
-     * @return Client
-     */
-    public function setLastResponse(ResponseInterface $lastResponse) : Client
-    {
-        $this->lastResponse = $lastResponse;
-        return $this;
     }
 }
