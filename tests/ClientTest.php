@@ -5,7 +5,6 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use GuzzleHttp;
 use Loevgaard\Linkmobility\Payload\Message;
 use PHPUnit\Framework\TestCase;
 
@@ -30,7 +29,7 @@ class ClientTest extends TestCase
         // tests last response
         $returnObj = new \stdClass();
         $returnObj->data = 'data';
-        $response = new Response(200, [], GuzzleHttp\json_encode($returnObj));
+        $response = new Response(200, [], json_encode($returnObj));
         $mock = new MockHandler([$response]);
         $handler = HandlerStack::create($mock);
 
@@ -67,10 +66,10 @@ class ClientTest extends TestCase
         ];
 
         // convert to \stdClass
-        $responseObject = GuzzleHttp\json_decode(GuzzleHttp\json_encode($responseArray));
+        $responseObject = json_decode(json_encode($responseArray));
 
         $mock = new MockHandler([
-            new Response(200, [], GuzzleHttp\json_encode($responseObject)),
+            new Response(200, [], json_encode($responseObject)),
         ]);
         $handler = HandlerStack::create($mock);
 
