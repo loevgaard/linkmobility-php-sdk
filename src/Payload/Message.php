@@ -34,26 +34,6 @@ class Message implements PayloadInterface
      */
     const CLASS_3 = 3;
 
-    /**
-     * Note! These content types currently only apply to danish shortcodes
-     * See https://linkmobility.atlassian.net/wiki/display/COOL/14.+Contenttypes for more info
-     */
-    const CONTENT_TYPE_1 = 1; // Ringetoner og billeder
-    const CONTENT_TYPE_2 = 2; // Videoklip og tv
-    const CONTENT_TYPE_3 = 3; // Voksenindhold
-    const CONTENT_TYPE_4 = 4; // Musik
-    const CONTENT_TYPE_5 = 5; // Lydbøger og podcasts
-    const CONTENT_TYPE_6 = 6; // Mobilspil
-    const CONTENT_TYPE_7 = 7; // Chat tjenester
-    const CONTENT_TYPE_8 = 8; // Konkurrence og afstemning
-    const CONTENT_TYPE_9 = 9; // M-payment (Fysik varer)
-    const CONTENT_TYPE_10 = 10; // Nyheder og information
-    const CONTENT_TYPE_11 = 11; // Indsamlinger / donationer (Humanitære organisationer)
-    const CONTENT_TYPE_12 = 12; // Telemetri (M2M)
-    const CONTENT_TYPE_13 = 13; // Diverse
-    const CONTENT_TYPE_14 = 14; // Indsamlinger / donationer (ikke humanitære organisationer)
-    const CONTENT_TYPE_15 = 15; // Lotteri (moms fri)
-
     /*
      * Send normal message (160 chars, but if more than 160 chars, 153 chars per part message)
      */
@@ -291,7 +271,7 @@ class Message implements PayloadInterface
             Assert::thatNullOr($this->charity)->boolean();
             Assert::thatNullOr($this->invoiceText)->string()->notEmpty();
             Assert::thatNullOr($this->validity)->integer();
-            Assert::thatNullOr($this->contentType)->integer()->inArray(static::getContentTypes());
+            Assert::thatNullOr($this->contentType)->integer();
             Assert::thatNullOr($this->format)->string()->inArray(static::getFormats());
             Assert::thatNullOr($this->udh)->string()->notEmpty();
             Assert::thatNullOr($this->attachment)->isArray()->notEmpty();
@@ -327,32 +307,6 @@ class Message implements PayloadInterface
     public static function getClasses() : array
     {
         return [static::CLASS_0, static::CLASS_1, static::CLASS_2, static::CLASS_3];
-    }
-
-    /**
-     * Returns the possible content types for the payload
-     *
-     * @return array
-     */
-    public static function getContentTypes() : array
-    {
-        return [
-            static::CONTENT_TYPE_1,
-            static::CONTENT_TYPE_2,
-            static::CONTENT_TYPE_3,
-            static::CONTENT_TYPE_4,
-            static::CONTENT_TYPE_5,
-            static::CONTENT_TYPE_6,
-            static::CONTENT_TYPE_7,
-            static::CONTENT_TYPE_8,
-            static::CONTENT_TYPE_9,
-            static::CONTENT_TYPE_10,
-            static::CONTENT_TYPE_11,
-            static::CONTENT_TYPE_12,
-            static::CONTENT_TYPE_13,
-            static::CONTENT_TYPE_14,
-            static::CONTENT_TYPE_15,
-        ];
     }
 
     /**
