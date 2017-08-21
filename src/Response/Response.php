@@ -15,8 +15,8 @@ abstract class Response
         $this->init();
     }
 
-    public function init() {
-
+    public function init()
+    {
     }
 
     /**

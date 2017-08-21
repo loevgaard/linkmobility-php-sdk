@@ -6,6 +6,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Loevgaard\Linkmobility\Payload\Message;
+use Loevgaard\Linkmobility\Response\BatchStatus;
 use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
@@ -86,6 +87,6 @@ class ClientTest extends TestCase
         $client->setHttpClient($guzzleClient);
         $res = $client->postMessage($payload);
 
-        $this->assertEquals($responseObject, $res);
+        $this->assertInstanceOf(BatchStatus::class, $res);
     }
 }

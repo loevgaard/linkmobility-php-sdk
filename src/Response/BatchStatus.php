@@ -25,15 +25,15 @@ class BatchStatus extends Response
     {
         parent::init();
 
-        if(isset($this->data->status)) {
+        if (isset($this->data->status)) {
             $this->status = (int)$this->data->status;
         }
 
-        if(isset($this->data->stat)) {
+        if (isset($this->data->stat)) {
             $this->stat = new Stat($this->data->stat);
         }
 
-        if(isset($this->data->details)) {
+        if (isset($this->data->details)) {
             $this->details = new Details($this->data->details);
         }
     }
@@ -43,7 +43,32 @@ class BatchStatus extends Response
      *
      * @return bool
      */
-    public function isSuccessful() {
+    public function isSuccessful()
+    {
         return $this->status >= 200 && $this->status < 300;
+    }
+
+    /**
+     * @return Stat
+     */
+    public function getStat(): Stat
+    {
+        return $this->stat;
+    }
+
+    /**
+     * @return Details
+     */
+    public function getDetails(): Details
+    {
+        return $this->details;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatus(): int
+    {
+        return $this->status;
     }
 }
