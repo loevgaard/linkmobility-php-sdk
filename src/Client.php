@@ -4,6 +4,7 @@ namespace Loevgaard\Linkmobility;
 use Assert\Assert;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
+use Loevgaard\Linkmobility\Response\BatchStatus;
 use Psr\Http\Message\ResponseInterface;
 use Loevgaard\Linkmobility\Payload\Message as MessagePayload;
 
@@ -51,11 +52,14 @@ class Client
     public function request(string $method, string $uri, array $options)
     {
         $client = $this->getHttpClient();
+
+        // @todo move default options somewhere else
         $options = array_merge($options, [
             'headers' => [
                 'Accept' => 'application/json',
             ],
-            'verify' => false
+            'verify' => false,
+            'http_errors' => false,
         ]);
         $this->lastResponse = $client->request($method, $this->baseUrl . $uri.'?apikey='.$this->apiKey, $options);
 
@@ -72,13 +76,15 @@ class Client
      * Will create a new message
      *
      * @param MessagePayload $payload
-     * @return \stdClass
+     * @return BatchStatus
      */
-    public function postMessage(MessagePayload $payload) : \stdClass
+    public function postMessage(MessagePayload $payload) : BatchStatus
     {
-        return $this->request('post', '/message.json', [
+        /** @var \stdClass $response */
+        $response = $this->request('post', '/message.json', [
             'json' => $payload->getPayload()
         ]);
+        return new BatchStatus($response);
     }
 
     /*
