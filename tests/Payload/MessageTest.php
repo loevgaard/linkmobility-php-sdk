@@ -165,6 +165,8 @@ class MessageTest extends TestCase
             ->setRevenueText($payload['revenuetext'])
         ;
 
+        $payload = ['message' => $payload];
+
         $this->assertEquals($payload, $message->getPayload());
 
         // test invalid payload

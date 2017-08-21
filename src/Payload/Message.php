@@ -239,9 +239,15 @@ class Message implements PayloadInterface
             'revenuetext' => $this->revenueText
         ];
 
-        return array_filter($payload, function ($elm) {
+        $payload =  array_filter($payload, function ($elm) {
             return !is_null($elm);
         });
+
+        // we wrap the payload in a message array according to
+        // https://linkmobility.atlassian.net/wiki/spaces/COOL/pages/26017829/Sending+SMS
+        return [
+            'message' => $payload
+        ];
     }
 
     /**
