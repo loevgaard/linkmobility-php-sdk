@@ -46,7 +46,7 @@ class MessageTest extends TestCase
         $message->setClass($val);
         $this->assertEquals($val, $message->getClass());
 
-        $val = Message::CONTENT_TYPE_1;
+        $val = 1;
         $message->setContentType($val);
         $this->assertEquals($val, $message->getContentType());
 
@@ -124,7 +124,7 @@ class MessageTest extends TestCase
             'charity' => false,
             'invoicetext' => 'invoicetext',
             'validity' => 60,
-            'contenttype' => Message::CONTENT_TYPE_1,
+            'contenttype' => 1,
             'format' => Message::FORMAT_GSM,
             'udh' => 'udh',
             'attachment' => ['attachment'],

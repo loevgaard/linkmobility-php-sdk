@@ -108,37 +108,39 @@ class DeliveryReport
         $this->to = $query['to'] ?? null;
         $this->returnData = $query['returndata'] ?? null;
 
-        if(isset($query['receivetime'])) {
+        if (isset($query['receivetime'])) {
             $this->receiveTime = \DateTimeImmutable::createFromFormat('U', $query['receivetime']);
-            if($this->receiveTime === false) {
-                throw new InvalidWebhookException('The format of `receivetime` is wrong. Value given: '.$query['receivetime']);
+            if ($this->receiveTime === false) {
+                throw new InvalidWebhookException(
+                    'The format of `receivetime` is wrong. Value given: '.$query['receivetime']
+                );
             }
         }
 
-        if(isset($query['statuscode'])) {
+        if (isset($query['statuscode'])) {
             $this->statusCode = (int)$query['statuscode'];
         }
 
-        if(isset($query['logdate'])) {
+        if (isset($query['logdate'])) {
             $this->logDate = \DateTimeImmutable::createFromFormat('Y_m_d', $query['logdate']);
-            if($this->logDate === false) {
+            if ($this->logDate === false) {
                 throw new InvalidWebhookException('The format of `logdate` is wrong. Value given: '.$query['logdate']);
             }
         }
 
-        if(isset($query['mcc'])) {
+        if (isset($query['mcc'])) {
             $this->mcc = (int)$query['mcc'];
         }
 
-        if(isset($query['mnc'])) {
+        if (isset($query['mnc'])) {
             $this->mnc = (int)$query['mnc'];
         }
 
-        if(isset($query['batchid'])) {
+        if (isset($query['batchid'])) {
             $this->batchId = (int)$query['batchid'];
         }
 
-        if(isset($query['push_price'])) {
+        if (isset($query['push_price'])) {
             $this->pushPrice = (int)$query['push_price'];
         }
     }
