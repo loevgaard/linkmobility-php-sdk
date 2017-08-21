@@ -206,7 +206,8 @@ class Message implements PayloadInterface
         $this->recipients = [];
     }
 
-    public static function create(string $sender, string $message, array $recipients) {
+    public static function create(string $sender, string $message, array $recipients)
+    {
         $obj = new Message();
         $obj->setSender($sender)
             ->setMessage($message)
