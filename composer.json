@@ -28,6 +28,7 @@
         "squizlabs/php_codesniffer": "^2.3"
     },
     "autoload": {
+        "files": ["src/functions_include.php"],
         "psr-4": {
             "Loevgaard\\Linkmobility\\": "src"
         }

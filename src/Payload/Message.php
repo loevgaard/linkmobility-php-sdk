@@ -2,6 +2,7 @@
 namespace Loevgaard\Linkmobility\Payload;
 
 use Assert\Assert;
+use Loevgaard\Linkmobility;
 use Loevgaard\Linkmobility\Exception\InvalidPayloadException;
 use Assert\AssertionFailedException;
 
@@ -205,6 +206,16 @@ class Message implements PayloadInterface
         $this->recipients = [];
     }
 
+    public static function create(string $sender, string $message, array $recipients) {
+        $obj = new Message();
+        $obj->setSender($sender)
+            ->setMessage($message)
+            ->setRecipients($recipients)
+        ;
+
+        return $message;
+    }
+
     /**
      * @inheritdoc
      */
@@ -300,6 +311,11 @@ class Message implements PayloadInterface
     {
         $this->recipients[] = $recipient;
         return $this;
+    }
+
+    public function getChunkCount() : int
+    {
+        return Linkmobility\chunkCount($this->message);
     }
 
     /**
