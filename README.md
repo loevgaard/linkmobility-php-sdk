@@ -7,23 +7,7 @@
 [![Quality Score][ico-code-quality]][link-code-quality]
 [![Total Downloads][ico-downloads]][link-downloads]
 
-**Note:** Replace ```Joachim Løvgaard``` ```loevgaard``` ```http://www.loevgaard.dk``` ```joachim@loevgaard.dk``` ```loevgaard``` ```linkmobility-php-sdk``` ```PHP SDK for Linkmobility API``` with their correct values in [README.md](README.md), [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE.md](LICENSE.md) and [composer.json](composer.json) files, then delete this line. You can run `$ php prefill.php` in the command line to make all replacements at once. Delete the file prefill.php as well.
-
-This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what
-PSRs you support to avoid any confusion with users and contributors.
-
-## Structure
-
-If any of the following are applicable to your project, then the directory structure should follow industry best practises by being named the following.
-
-```
-bin/        
-config/
-src/
-tests/
-vendor/
-```
-
+PHP SDK for the [Linkmobility REST API v2](https://linkmobility.atlassian.net/wiki/spaces/COOL/pages/26017821/LINK+Mobility+DK+Rest+API+v2)
 
 ## Install
 
@@ -35,9 +19,18 @@ $ composer require loevgaard/linkmobility-php-sdk
 
 ## Usage
 
-``` php
-$skeleton = new Loevgaard\Linkmobility();
-echo $skeleton->echoPhrase('Hello, League!');
+```php
+<?php
+require_once 'vendor/autoload.php';
+
+$message = new \Loevgaard\Linkmobility\Payload\Message();
+$message
+    ->setMessage('Message')
+    ->setSender('Sender')
+    ->addRecipient('+4511223344');
+
+$client = new \Loevgaard\Linkmobility\Client('insert api key');
+$client->postMessage($message);
 ```
 
 ## Change log
