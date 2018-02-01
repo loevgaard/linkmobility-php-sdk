@@ -23,7 +23,7 @@ class Details extends Response
     const STATE_DONE = 'DONE';
 
     /**
-     * @var \DateTimeInterface
+     * @var \DateTimeImmutable
      */
     protected $sendTime;
 
@@ -37,7 +37,10 @@ class Details extends Response
      */
     protected $state;
 
-    public function init()
+    /**
+     * @throws InvalidResponseException
+     */
+    public function init() : void
     {
         if (isset($this->data->sendtime)) {
             $this->sendTime = \DateTimeImmutable::createFromFormat('d-m-Y H:i:s', $this->data->sendtime);
@@ -80,9 +83,9 @@ class Details extends Response
     }
 
     /**
-     * @return \DateTimeInterface
+     * @return \DateTimeImmutable
      */
-    public function getSendTime(): \DateTimeInterface
+    public function getSendTime(): \DateTimeImmutable
     {
         return $this->sendTime;
     }

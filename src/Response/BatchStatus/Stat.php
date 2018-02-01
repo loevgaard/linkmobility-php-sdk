@@ -7,7 +7,7 @@ use Loevgaard\Linkmobility\Response\Response;
 class Stat extends Response
 {
     /**
-     * @var \DateTimeInterface
+     * @var \DateTimeImmutable
      */
     protected $sendTime;
 
@@ -26,7 +26,10 @@ class Stat extends Response
      */
     protected $rejected;
 
-    public function init()
+    /**
+     * @throws InvalidResponseException
+     */
+    public function init() : void
     {
         if (isset($this->data->sendtime)) {
             $this->sendTime = \DateTimeImmutable::createFromFormat('d-m-Y H:i:s', $this->data->sendtime);
@@ -51,9 +54,9 @@ class Stat extends Response
     }
 
     /**
-     * @return \DateTimeInterface
+     * @return \DateTimeImmutable
      */
-    public function getSendTime(): \DateTimeInterface
+    public function getSendTime(): \DateTimeImmutable
     {
         return $this->sendTime;
     }

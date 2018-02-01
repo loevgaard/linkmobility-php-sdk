@@ -1,6 +1,6 @@
 <?php
 namespace Loevgaard\Linkmobility\Exception;
 
-class Exception extends \Exception
+abstract class Exception extends \Exception
 {
 }

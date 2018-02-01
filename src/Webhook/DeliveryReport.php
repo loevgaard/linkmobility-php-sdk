@@ -44,7 +44,7 @@ class DeliveryReport
     protected $reason;
 
     /**
-     * @var \DateTimeInterface
+     * @var \DateTimeImmutable
      */
     protected $receiveTime;
 
@@ -71,7 +71,7 @@ class DeliveryReport
     protected $returnData;
 
     /**
-     * @var \DateTimeInterface
+     * @var \DateTimeImmutable
      */
     protected $logDate;
 
@@ -95,6 +95,11 @@ class DeliveryReport
      */
     protected $pushPrice;
 
+    /**
+     * DeliveryReport constructor.
+     * @param RequestInterface $request
+     * @throws InvalidWebhookException
+     */
     public function __construct(RequestInterface $request)
     {
         $this->request = $request;
@@ -210,9 +215,9 @@ class DeliveryReport
     }
 
     /**
-     * @return \DateTimeInterface
+     * @return \DateTimeImmutable
      */
-    public function getReceiveTime(): \DateTimeInterface
+    public function getReceiveTime(): \DateTimeImmutable
     {
         return $this->receiveTime;
     }
@@ -250,9 +255,9 @@ class DeliveryReport
     }
 
     /**
-     * @return \DateTimeInterface
+     * @return \DateTimeImmutable
      */
-    public function getLogDate(): \DateTimeInterface
+    public function getLogDate(): \DateTimeImmutable
     {
         return $this->logDate;
     }

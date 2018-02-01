@@ -47,7 +47,7 @@ class ClientTest extends TestCase
         ;
         $client->postMessage($payload);
 
-        $this->assertEquals($response, $client->getLastResponse());
+        $this->assertEquals($response, $client->getLastHttpResponse());
     }
     public function testPostMessage()
     {

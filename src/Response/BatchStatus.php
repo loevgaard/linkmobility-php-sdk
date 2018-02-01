@@ -21,10 +21,8 @@ class BatchStatus extends Response
      */
     protected $status;
 
-    public function init()
+    public function init() : void
     {
-        parent::init();
-
         if (isset($this->data->status)) {
             $this->status = (int)$this->data->status;
         }

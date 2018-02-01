@@ -1,17 +1,16 @@
 <?php
-namespace Loevgaard\Linkmobility\Payload;
+namespace Loevgaard\Linkmobility\Request;
 
 use Assert\Assert;
-use Loevgaard\Linkmobility;
-use Loevgaard\Linkmobility\Exception\InvalidPayloadException;
-use Assert\AssertionFailedException;
+use Loevgaard\Linkmobility\Response\BatchStatus;
+use Loevgaard\Linkmobility\ValueObject\Message;
+use Loevgaard\Linkmobility\ValueObject\Recipient;
+use Loevgaard\Linkmobility\ValueObject\Sender;
 
 /**
- * Class Message
- * @package Loevgaard\Linkmobility\Payload
- * @see https://linkmobility.atlassian.net/wiki/spaces/COOL/pages/26017807/08.+Messages
+ * @link https://linkmobility.atlassian.net/wiki/spaces/COOL/pages/26017807/08.+Messages
  */
-class Message implements PayloadInterface
+class PostMessageRequest extends Request
 {
     /*
      * Show message directly on phone. The message is not saved on the phone. (Also known as flash messages)
@@ -62,17 +61,17 @@ class Message implements PayloadInterface
     const FORMAT_MMS = 'MMS';
 
     /**
-     * @var array
+     * @var Recipient[]
      */
     protected $recipients;
 
     /**
-     * @var string
+     * @var Sender
      */
     protected $sender;
 
     /**
-     * @var string
+     * @var Message
      */
     protected $message;
 
@@ -181,29 +180,59 @@ class Message implements PayloadInterface
      */
     protected $revenueText;
 
-    public function __construct()
+    public function __construct(Sender $sender, Message $message, array $recipients)
     {
-        $this->recipients = [];
-    }
-
-    public static function create(string $sender, string $message, array $recipients)
-    {
-        $obj = new Message();
-        $obj->setSender($sender)
-            ->setMessage($message)
-            ->setRecipients($recipients)
-        ;
-
-        return $message;
+        $this->setSender($sender);
+        $this->setMessage($message);
+        $this->setRecipients($recipients);
     }
 
     /**
      * @inheritdoc
      */
-    public function getPayload(): array
+    public function validate(): void
     {
-        $this->validate();
+        parent::validate();
 
+        Assert::that($this->recipients)->isArray()->notEmpty();
+        Assert::thatAll($this->recipients)->isInstanceOf(Recipient::class);
+
+        // optional properties
+        Assert::thatNullOr($this->status)->boolean();
+        Assert::thatNullOr($this->statusUrl)->url();
+        Assert::thatNullOr($this->returnData)->string()->notEmpty();
+        Assert::thatNullOr($this->class)->integer()->choice(static::getClasses());
+        Assert::thatNullOr($this->sendTime)->isInstanceOf(\DateTimeInterface::class);
+        Assert::thatNullOr($this->price)->integer()->greaterOrEqualThan(100);
+        Assert::thatNullOr($this->charity)->boolean();
+        Assert::thatNullOr($this->invoiceText)->string()->notEmpty();
+        Assert::thatNullOr($this->validity)->integer();
+        Assert::thatNullOr($this->contentType)->integer();
+        Assert::thatNullOr($this->format)->string()->inArray(static::getFormats());
+        Assert::thatNullOr($this->udh)->string()->notEmpty();
+        Assert::thatNullOr($this->attachment)->isArray()->notEmpty();
+        Assert::thatNullOr($this->pushUrl)->url();
+        Assert::thatNullOr($this->pushExpire)->string()->notEmpty();
+        Assert::thatNullOr($this->filter)->isArray()->notEmpty();
+        Assert::thatNullOr($this->segmentation)->isArray()->notEmpty();
+        Assert::thatNullOr($this->pid)->integer();
+        Assert::thatNullOr($this->advanced)->string()->notEmpty();
+        Assert::thatNullOr($this->protocol)->string()->notEmpty();
+        Assert::thatNullOr($this->revenueText)->string()->notEmpty();
+    }
+
+    public function getMethod(): string
+    {
+        return RequestInterface::METHOD_POST;
+    }
+
+    public function getUri(): string
+    {
+        return '/message.json';
+    }
+
+    public function getBody(): array
+    {
         $payload = [
             'recipients' => join(',', $this->recipients),
             'sender' => $this->sender,
@@ -242,61 +271,15 @@ class Message implements PayloadInterface
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function validate(): void
+    public function getResponseClass(): string
     {
-        $recipientPattern = '/^(\+|c)?[0-9]+$/i';
-
-        try {
-            // required properties
-            Assert::that($this->recipients)->isArray()->notEmpty();
-            Assert::thatAll($this->recipients)->notEmpty()->regex($recipientPattern);
-            Assert::that($this->sender)->string()->notEmpty();
-
-            // if the sender is alphanumeric, test the length
-            if (!preg_match('/^\+[0-9]+$/i', $this->sender)) {
-                Assert::that($this->sender)->maxLength(11);
-            }
-            Assert::that($this->message)->string()->notEmpty();
-
-            // optional properties
-            Assert::thatNullOr($this->status)->boolean();
-            Assert::thatNullOr($this->statusUrl)->url();
-            Assert::thatNullOr($this->returnData)->string()->notEmpty();
-            Assert::thatNullOr($this->class)->integer()->inArray(static::getClasses());
-            Assert::thatNullOr($this->sendTime)->isInstanceOf(\DateTimeInterface::class);
-            Assert::thatNullOr($this->price)->integer()->greaterOrEqualThan(100);
-            Assert::thatNullOr($this->charity)->boolean();
-            Assert::thatNullOr($this->invoiceText)->string()->notEmpty();
-            Assert::thatNullOr($this->validity)->integer();
-            Assert::thatNullOr($this->contentType)->integer();
-            Assert::thatNullOr($this->format)->string()->inArray(static::getFormats());
-            Assert::thatNullOr($this->udh)->string()->notEmpty();
-            Assert::thatNullOr($this->attachment)->isArray()->notEmpty();
-            Assert::thatNullOr($this->pushUrl)->url();
-            Assert::thatNullOr($this->pushExpire)->string()->notEmpty();
-            Assert::thatNullOr($this->filter)->isArray()->notEmpty();
-            Assert::thatNullOr($this->segmentation)->isArray()->notEmpty();
-            Assert::thatNullOr($this->pid)->integer();
-            Assert::thatNullOr($this->advanced)->string()->notEmpty();
-            Assert::thatNullOr($this->protocol)->string()->notEmpty();
-            Assert::thatNullOr($this->revenueText)->string()->notEmpty();
-        } catch (AssertionFailedException $e) {
-            throw new InvalidPayloadException($e->getMessage(), $e->getCode(), $e);
-        }
+        return BatchStatus::class;
     }
 
-    public function addRecipient($recipient) : Message
+    public function addRecipient(Recipient $recipient) : PostMessageRequest
     {
         $this->recipients[] = $recipient;
         return $this;
-    }
-
-    public function getChunkCount() : int
-    {
-        return Linkmobility\chunkCount($this->message);
     }
 
     /**
@@ -306,7 +289,12 @@ class Message implements PayloadInterface
      */
     public static function getClasses() : array
     {
-        return [static::CLASS_0, static::CLASS_1, static::CLASS_2, static::CLASS_3];
+        return [
+            self::CLASS_0 => self::CLASS_0,
+            self::CLASS_1 => self::CLASS_1,
+            self::CLASS_2 => self::CLASS_2,
+            self::CLASS_3 => self::CLASS_3
+        ];
     }
 
     /**
@@ -317,11 +305,11 @@ class Message implements PayloadInterface
     public static function getFormats() : array
     {
         return [
-            static::FORMAT_GSM,
-            static::FORMAT_UNICODE,
-            static::FORMAT_BINARY,
-            static::FORMAT_WAPPUSH,
-            static::FORMAT_MMS
+            self::FORMAT_GSM => self::FORMAT_GSM,
+            self::FORMAT_UNICODE => self::FORMAT_UNICODE,
+            self::FORMAT_BINARY => self::FORMAT_BINARY,
+            self::FORMAT_WAPPUSH => self::FORMAT_WAPPUSH,
+            self::FORMAT_MMS => self::FORMAT_MMS
         ];
     }
 
@@ -330,7 +318,7 @@ class Message implements PayloadInterface
      */
 
     /**
-     * @return array
+     * @return Recipient[]
      */
     public function getRecipients(): array
     {
@@ -338,8 +326,8 @@ class Message implements PayloadInterface
     }
 
     /**
-     * @param array $recipients
-     * @return Message
+     * @param Recipient[] $recipients
+     * @return PostMessageRequest
      */
     public function setRecipients(array $recipients)
     {
@@ -348,36 +336,36 @@ class Message implements PayloadInterface
     }
 
     /**
-     * @return string
+     * @return Sender
      */
-    public function getSender(): string
+    public function getSender(): Sender
     {
         return $this->sender;
     }
 
     /**
-     * @param string $sender
-     * @return Message
+     * @param Sender $sender
+     * @return PostMessageRequest
      */
-    public function setSender(string $sender)
+    public function setSender(Sender $sender)
     {
         $this->sender = $sender;
         return $this;
     }
 
     /**
-     * @return string
+     * @return Message
      */
-    public function getMessage(): string
+    public function getMessage(): Message
     {
         return $this->message;
     }
 
     /**
-     * @param string $message
-     * @return Message
+     * @param Message $message
+     * @return PostMessageRequest
      */
-    public function setMessage(string $message)
+    public function setMessage(Message $message)
     {
         $this->message = $message;
         return $this;
@@ -393,7 +381,7 @@ class Message implements PayloadInterface
 
     /**
      * @param bool $status
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setStatus(bool $status)
     {
@@ -411,7 +399,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $statusUrl
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setStatusUrl(string $statusUrl)
     {
@@ -429,7 +417,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $returnData
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setReturnData(string $returnData)
     {
@@ -447,7 +435,7 @@ class Message implements PayloadInterface
 
     /**
      * @param int $class
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setClass(int $class)
     {
@@ -465,7 +453,7 @@ class Message implements PayloadInterface
 
     /**
      * @param \DateTimeInterface $sendTime
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setSendTime(\DateTimeInterface $sendTime)
     {
@@ -483,7 +471,7 @@ class Message implements PayloadInterface
 
     /**
      * @param int $price
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setPrice(int $price)
     {
@@ -501,7 +489,7 @@ class Message implements PayloadInterface
 
     /**
      * @param bool $charity
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setCharity(bool $charity)
     {
@@ -519,7 +507,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $invoiceText
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setInvoiceText(string $invoiceText)
     {
@@ -537,7 +525,7 @@ class Message implements PayloadInterface
 
     /**
      * @param int $validity
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setValidity(int $validity)
     {
@@ -555,7 +543,7 @@ class Message implements PayloadInterface
 
     /**
      * @param int $contentType
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setContentType(int $contentType)
     {
@@ -573,7 +561,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $format
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setFormat(string $format)
     {
@@ -591,7 +579,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $udh
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setUdh(string $udh)
     {
@@ -609,7 +597,7 @@ class Message implements PayloadInterface
 
     /**
      * @param array $attachment
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setAttachment(array $attachment)
     {
@@ -627,7 +615,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $pushUrl
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setPushUrl(string $pushUrl)
     {
@@ -645,7 +633,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $pushExpire
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setPushExpire(string $pushExpire)
     {
@@ -663,7 +651,7 @@ class Message implements PayloadInterface
 
     /**
      * @param array $filter
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setFilter(array $filter)
     {
@@ -681,7 +669,7 @@ class Message implements PayloadInterface
 
     /**
      * @param array $segmentation
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setSegmentation(array $segmentation)
     {
@@ -699,7 +687,7 @@ class Message implements PayloadInterface
 
     /**
      * @param int $pid
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setPid(int $pid)
     {
@@ -717,7 +705,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $advanced
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setAdvanced(string $advanced)
     {
@@ -735,7 +723,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $protocol
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setProtocol(string $protocol)
     {
@@ -753,7 +741,7 @@ class Message implements PayloadInterface
 
     /**
      * @param string $revenueText
-     * @return Message
+     * @return PostMessageRequest
      */
     public function setRevenueText(string $revenueText)
     {
