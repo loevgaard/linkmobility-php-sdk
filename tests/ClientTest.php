@@ -9,6 +9,9 @@ use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
 {
+    /**
+     * @throws \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
+     */
     public function testGettersSetters()
     {
         $httpClient = new GuzzleClient();
@@ -21,12 +24,17 @@ class ClientTest extends TestCase
         // tests lazy load of client
         $client = new Client('api key');
         $this->assertInstanceOf(GuzzleClient::class, $client->getHttpClient());
+    }
 
+    /**
+     * @throws \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
+     */
+    public function testRequest()
+    {
         // tests last response
         $returnObj = ['key' => 'val'];
-        $response = new Response(200, [], \GuzzleHttp\json_encode($returnObj));
-        $mock = new MockHandler([$response]);
-        $handler = HandlerStack::create($mock);
+        $response = new Response(200, [], json_encode($returnObj));
+        $handler = HandlerStack::create(new MockHandler([$response]));
 
         $httpClient = new GuzzleClient(['handler' => $handler]);
         $client = new Client('api key');

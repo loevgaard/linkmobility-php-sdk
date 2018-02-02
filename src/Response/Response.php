@@ -1,23 +1,28 @@
 <?php declare(strict_types=1);
 namespace Loevgaard\Linkmobility\Response;
 
+use Assert\Assert;
+
 abstract class Response implements ResponseInterface
 {
+    /**
+     * @var array
+     */
     protected $data;
 
     /**
-     * @var bool
+     * @var int
      */
-    protected $successful;
+    protected $status;
 
-    public function __construct($data)
+    public function __construct(array $data)
     {
-        $this->successful = true;
-        $this->data = $data;
+        Assert::that($data)->keyExists('status');
 
-        if (is_array($data) && isset($data['errors'])) {
-            $this->successful = false;
-        } else {
+        $this->data = $data;
+        $this->status = (int)$this->data['status'];
+
+        if ($this->isSuccessful()) {
             $this->init();
         }
     }
@@ -27,6 +32,11 @@ abstract class Response implements ResponseInterface
      */
     public function isSuccessful(): bool
     {
-        return $this->successful;
+        return $this->status >= 200 && $this->status < 300;
+    }
+
+    public function getError(): string
+    {
+        return $this->isSuccessful() ? '' : $this->data['message'];
     }
 }

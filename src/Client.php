@@ -43,7 +43,7 @@ class Client
     protected $httpResponse;
 
     /**
-     * @var array|string|int|bool
+     * @var array
      */
     protected $response;
 
@@ -58,22 +58,23 @@ class Client
     /**
      * @param RequestInterface $request
      * @return ResponseInterface
-     * @throws GuzzleException
+     * @throws ExceptionInterface
      */
     public function request(RequestInterface $request) : ResponseInterface
     {
         $responseClass = $request->getResponseClass();
-
-        return new $responseClass($this->rawRequest($request->getMethod(), $request->getUri(), $request->getOptions()));
+        return new $responseClass($this->rawRequest($request->getMethod(), $request->getUri(), $request->getBody(), $request->getOptions()));
     }
 
     /**
      * @param string $method
      * @param string $uri
+     * @param array $body
      * @param array $options
-     * @return mixed
+     * @return array
+     * @throws ExceptionInterface
      */
-    public function rawRequest(string $method, string $uri, array $options = [])
+    public function rawRequest(string $method, string $uri, array $body = [], array $options = []) : array
     {
         try {
             // reset responses
@@ -88,20 +89,23 @@ class Client
             $this->configureOptions($resolver);
             $options = $resolver->resolve($options);
 
+            if (!empty($body)) {
+                // the body will always override any other data sent
+                $options['json'] = $body;
+            }
+
             // create url
-            $url = $this->baseUrl . '/' . $uri . '?apikey=' . $this->apiKey;
+            $url = $this->baseUrl . $uri . '?apikey=' . $this->apiKey;
 
             // do request
             $this->httpResponse = $client->request($method, $url, $options);
 
             // parse response
             $this->response = \GuzzleHttp\json_decode((string)$this->httpResponse->getBody(), true);
-        } catch (ExceptionInterface $e) {
-            $this->addResponseError($e, 'Symfony Options Resolver Exception');
         } catch (GuzzleException $e) {
-            $this->addResponseError($e, 'Guzzle Exception');
+            $this->setResponseError($e);
         } catch (\InvalidArgumentException $e) {
-            $this->addResponseError($e, 'JSON parse error');
+            $this->setResponseError($e);
         }
 
         return $this->response;
@@ -139,11 +143,11 @@ class Client
     }
 
     /**
-     * @return array|bool|int|string
+     * @return array
      */
-    public function getResponse()
+    public function getResponse() : array
     {
-        return $this->response;
+        return (array)$this->response;
     }
 
     protected function configureOptions(OptionsResolver $resolver) : void
@@ -158,28 +162,23 @@ class Client
             ],
             RequestOptions::CONNECT_TIMEOUT => 30,
             RequestOptions::TIMEOUT => 120,
-            RequestOptions::HTTP_ERRORS => true
+            RequestOptions::HTTP_ERRORS => false
         ]);
     }
 
-    protected function addResponseError(\Exception $exception, string $title, ?string $detail = null) : void
+    /**
+     * Linkmobility always formats their errors like this, so we mimic this
+     *
+     * @param string|\Exception $error
+     * @param int $statusCode
+     */
+    protected function setResponseError($error, int $statusCode = 500) : void
     {
-        if (!isset($this->response['errors'])) {
-            $this->response['errors'] = [];
+        if ($error instanceof \Exception) {
+            $error = $error->getMessage();
         }
 
-        $error = [
-            'title' => $title,
-            'detail' => $detail ? : $exception->getMessage(),
-            'meta' => [
-                'exception' => get_class($exception)
-            ]
-        ];
-
-        if ($this->httpResponse) {
-            $error['status'] = $this->httpResponse->getStatusCode();
-        }
-
-        $this->response['errors'][] = $error;
+        $this->response['message'] = (string)$error;
+        $this->response['status'] = $statusCode;
     }
 }

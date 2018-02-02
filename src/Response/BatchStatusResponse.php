@@ -17,25 +17,15 @@ class BatchStatusResponse extends Response
      */
     protected $details;
 
-    /**
-     * @var int
-     */
-    protected $status;
-
     public function init() : void
     {
         Assert::that($this->data)
-            ->isArray()
-            ->keyExists('status')
             ->keyExists('stat')
             ->keyExists('details')
         ;
 
-        $this->status = (int)$this->data['status'];
         $this->stat = new Stat($this->data['stat']);
         $this->details = new Details($this->data['details']);
-
-        $this->successful = $this->status >= 200 && $this->status < 300;
     }
 
     /**
@@ -52,13 +42,5 @@ class BatchStatusResponse extends Response
     public function getDetails(): Details
     {
         return $this->details;
-    }
-
-    /**
-     * @return int
-     */
-    public function getStatus(): int
-    {
-        return $this->status;
     }
 }

@@ -41,8 +41,8 @@
     },
     "scripts": {
         "test": "phpunit",
-        "check-style": "./vendor/bin/php-cs-fixer fix --verbose --allow-risky=yes --dry-run",
-        "fix-style": "./vendor/bin/php-cs-fixer fix --verbose --allow-risky=yes"
+        "check-style": "./vendor/bin/php-cs-fixer fix --verbose --dry-run",
+        "fix-style": "./vendor/bin/php-cs-fixer fix --verbose"
     },
     "extra": {
         "branch-alias": {

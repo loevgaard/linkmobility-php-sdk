@@ -2,9 +2,8 @@
 namespace Loevgaard\Linkmobility\Response\BatchStatusResponse;
 
 use Assert\Assert;
-use Loevgaard\Linkmobility\Response\Response;
 
-class Stat extends Response
+class Stat
 {
     /**
      * @var \DateTimeImmutable
@@ -26,21 +25,21 @@ class Stat extends Response
      */
     protected $rejected;
 
-    public function init() : void
+    public function __construct(array $data)
     {
-        Assert::that($this->data)
+        Assert::that($data)
             ->isArray()->keyExists('sendtime')
             ->keyExists('buffered')
             ->keyExists('received')
             ->keyExists('rejected')
         ;
 
-        $this->sendTime = \DateTimeImmutable::createFromFormat('d-m-Y H:i:s', $this->data['sendtime']);
-        Assert::that($this->sendTime)->isInstanceOf(\DateTimeImmutable::class, '`sendtime` does not have the correct format. Value given: '.$this->data['sendtime']);
+        $this->sendTime = \DateTimeImmutable::createFromFormat('d-m-Y H:i:s', $data['sendtime']);
+        Assert::that($this->sendTime)->isInstanceOf(\DateTimeImmutable::class, '`sendtime` does not have the correct format. Value given: '.$data['sendtime']);
 
-        $this->buffered = (int)$this->data['buffered'];
-        $this->received = (int)$this->data['received'];
-        $this->rejected = (int)$this->data['rejected'];
+        $this->buffered = (int)$data['buffered'];
+        $this->received = (int)$data['received'];
+        $this->rejected = (int)$data['rejected'];
     }
 
     /**

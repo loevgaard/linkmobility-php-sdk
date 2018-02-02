@@ -34,4 +34,10 @@ class MessageTest extends TestCase
             $this->assertEquals($test['expected'], $message->chunkCount());
         }
     }
+
+    public function testIsUnicode()
+    {
+        $message = new Message("Hello \xF0\x9F\x98\x83");
+        $this->assertTrue($message->isUnicode());
+    }
 }

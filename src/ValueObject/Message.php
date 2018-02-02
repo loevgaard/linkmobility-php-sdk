@@ -51,4 +51,9 @@ class Message extends StringValueObject
 
         return $this->gsm7;
     }
+
+    public function isUnicode() : bool
+    {
+        return !$this->isGsm7();
+    }
 }

@@ -2,9 +2,8 @@
 namespace Loevgaard\Linkmobility\Response\BatchStatusResponse;
 
 use Assert\Assert;
-use Loevgaard\Linkmobility\Response\Response;
 
-class Details extends Response
+class Details
 {
     /**
      * The batch is ready for processing. The batch will be processed shortly after sendtime has passed.
@@ -37,21 +36,21 @@ class Details extends Response
      */
     protected $state;
 
-    public function init() : void
+    public function __construct(array $data)
     {
-        Assert::that($this->data)
-            ->isArray()->keyExists('sendtime')
+        Assert::that($data)
+            ->keyExists('sendtime')
             ->keyExists('batchid')
             ->keyExists('state')
         ;
 
-        Assert::that($this->data['state'])->choice(self::getStates());
+        Assert::that($data['state'])->choice(self::getStates());
 
-        $this->sendTime = \DateTimeImmutable::createFromFormat('d-m-Y H:i:s', $this->data['sendtime']);
-        Assert::that($this->sendTime)->isInstanceOf(\DateTimeImmutable::class, '`sendtime` does not have the correct format. Value given: '.$this->data['sendtime']);
+        $this->sendTime = \DateTimeImmutable::createFromFormat('d-m-Y H:i:s', $data['sendtime']);
+        Assert::that($this->sendTime)->isInstanceOf(\DateTimeImmutable::class, '`sendtime` does not have the correct format. Value given: '.$data['sendtime']);
 
-        $this->batchId = (int)$this->data['batchid'];
-        $this->state = $this->data['state'];
+        $this->batchId = (int)$data['batchid'];
+        $this->state = $data['state'];
     }
 
     public static function getStates() : array

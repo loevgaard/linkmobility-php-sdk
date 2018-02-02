@@ -38,13 +38,12 @@ class BatchStatusResponseTest extends TestCase
 
         $this->assertNotNull($response->getDetails());
         $this->assertInstanceOf(BatchStatusResponse\Details::class, $response->getDetails());
-        $this->assertEquals(
-            $data['details']['sendtime'],
-            $response->getDetails()->getSendTime()->format('d-m-Y H:i:s')
-        );
+        $this->assertEquals($data['details']['sendtime'], $response->getDetails()->getSendTime()->format('d-m-Y H:i:s'));
         $this->assertEquals($data['details']['batchid'], $response->getDetails()->getBatchId());
         $this->assertEquals($data['details']['state'], $response->getDetails()->getState());
 
-        $this->assertEquals($data['status'], $response->getStatus());
+        $this->assertTrue($response->getDetails()->isDone());
+        $this->assertFalse($response->getDetails()->isQueued());
+        $this->assertFalse($response->getDetails()->isRunning());
     }
 }

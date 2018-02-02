@@ -208,7 +208,7 @@ class PostMessageRequest extends Request
         Assert::thatNullOr($this->invoiceText)->string()->notEmpty();
         Assert::thatNullOr($this->validity)->integer();
         Assert::thatNullOr($this->contentType)->integer();
-        Assert::thatNullOr($this->format)->string()->inArray(static::getFormats());
+        Assert::thatNullOr($this->format)->string()->choice(static::getFormats());
         Assert::thatNullOr($this->udh)->string()->notEmpty();
         Assert::thatNullOr($this->attachment)->isArray()->notEmpty();
         Assert::thatNullOr($this->pushUrl)->url();
@@ -233,10 +233,10 @@ class PostMessageRequest extends Request
 
     public function getBody(): array
     {
-        $payload = [
+        $body = [
             'recipients' => join(',', $this->recipients),
-            'sender' => $this->sender,
-            'message' => $this->message,
+            'sender' => $this->sender->get(),
+            'message' => $this->message->get(),
             'status' => $this->status,
             'statusurl' => $this->statusUrl,
             'returndata' => $this->returnData,
@@ -260,14 +260,14 @@ class PostMessageRequest extends Request
             'revenuetext' => $this->revenueText
         ];
 
-        $payload =  array_filter($payload, function ($elm) {
+        $body =  array_filter($body, function ($elm) {
             return !is_null($elm);
         });
 
         // we wrap the payload in a message array according to
         // https://linkmobility.atlassian.net/wiki/spaces/COOL/pages/26017829/Sending+SMS
         return [
-            'message' => $payload
+            'message' => $body
         ];
     }
 
@@ -331,7 +331,10 @@ class PostMessageRequest extends Request
      */
     public function setRecipients(array $recipients)
     {
-        $this->recipients = $recipients;
+        foreach ($recipients as $recipient) {
+            $this->addRecipient($recipient);
+        }
+
         return $this;
     }
 
@@ -368,6 +371,13 @@ class PostMessageRequest extends Request
     public function setMessage(Message $message)
     {
         $this->message = $message;
+
+        if ($this->message->isGsm7()) {
+            $this->setFormat(self::FORMAT_GSM);
+        } else {
+            $this->setFormat(self::FORMAT_UNICODE);
+        }
+
         return $this;
     }
 
@@ -524,11 +534,19 @@ class PostMessageRequest extends Request
     }
 
     /**
-     * @param int $validity
+     * @param int|\DateInterval $validity In minutes
      * @return PostMessageRequest
      */
-    public function setValidity(int $validity)
+    public function setValidity($validity)
     {
+        if ($validity instanceof \DateInterval) {
+            $now = new \DateTimeImmutable();
+            $seconds = $now->add($validity)->getTimestamp() - $now->getTimestamp();
+            $validity = ceil($seconds / 60);
+        }
+
+        $validity = (int)$validity;
+
         $this->validity = $validity;
         return $this;
     }
@@ -632,11 +650,15 @@ class PostMessageRequest extends Request
     }
 
     /**
-     * @param string $pushExpire
+     * @param string|\DateTimeInterface $pushExpire
      * @return PostMessageRequest
      */
-    public function setPushExpire(string $pushExpire)
+    public function setPushExpire($pushExpire)
     {
+        if ($pushExpire instanceof \DateTimeInterface) {
+            $pushExpire = (string)$pushExpire->getTimestamp();
+        }
+
         $this->pushExpire = $pushExpire;
         return $this;
     }

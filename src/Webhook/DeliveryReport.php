@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Loevgaard\Linkmobility\Webhook;
 
-use Loevgaard\Linkmobility\Exception\InvalidWebhookException;
+use Loevgaard\Linkmobility\Exception\InvalidDateTimeFormatException;
 use Psr\Http\Message\RequestInterface;
 
 class DeliveryReport
@@ -98,7 +98,7 @@ class DeliveryReport
     /**
      * DeliveryReport constructor.
      * @param RequestInterface $request
-     * @throws InvalidWebhookException
+     * @throws InvalidDateTimeFormatException
      */
     public function __construct(RequestInterface $request)
     {
@@ -116,7 +116,7 @@ class DeliveryReport
         if (isset($query['receivetime'])) {
             $this->receiveTime = \DateTimeImmutable::createFromFormat('U', $query['receivetime']);
             if ($this->receiveTime === false) {
-                throw new InvalidWebhookException(
+                throw new InvalidDateTimeFormatException(
                     'The format of `receivetime` is wrong. Value given: '.$query['receivetime']
                 );
             }
@@ -129,7 +129,7 @@ class DeliveryReport
         if (isset($query['logdate'])) {
             $this->logDate = \DateTimeImmutable::createFromFormat('Y_m_d', $query['logdate']);
             if ($this->logDate === false) {
-                throw new InvalidWebhookException('The format of `logdate` is wrong. Value given: '.$query['logdate']);
+                throw new InvalidDateTimeFormatException('The format of `logdate` is wrong. Value given: '.$query['logdate']);
             }
         }
 
