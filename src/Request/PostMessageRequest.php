@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 namespace Loevgaard\Linkmobility\Request;
 
 use Assert\Assert;
-use Loevgaard\Linkmobility\Response\BatchStatus;
+use Loevgaard\Linkmobility\Response\BatchStatusResponse;
 use Loevgaard\Linkmobility\ValueObject\Message;
 use Loevgaard\Linkmobility\ValueObject\Recipient;
 use Loevgaard\Linkmobility\ValueObject\Sender;
@@ -273,7 +273,7 @@ class PostMessageRequest extends Request
 
     public function getResponseClass(): string
     {
-        return BatchStatus::class;
+        return BatchStatusResponse::class;
     }
 
     public function addRecipient(Recipient $recipient) : PostMessageRequest

@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 namespace Loevgaard\Linkmobility\ValueObject;
 
 use Loevgaard\Linkmobility\GSM7\GSM7;
@@ -34,7 +34,8 @@ class Message extends StringValueObject
         $doubles = GSM7::DOUBLES;
 
         for ($i = 0; $i < $length; $i++) {
-            if (in_array($this->value[$i], $doubles)) {
+            $char = mb_substr($this->value, $i, 1);
+            if (in_array($char, $doubles)) {
                 $length++;
             }
         }

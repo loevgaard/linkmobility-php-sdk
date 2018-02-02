@@ -1,7 +1,7 @@
-<?php
-namespace Loevgaard\Linkmobility\Response\BatchStatus;
+<?php declare(strict_types=1);
+namespace Loevgaard\Linkmobility\Response\BatchStatusResponse;
 
-use Loevgaard\Linkmobility\Exception\InvalidResponseException;
+use Assert\Assert;
 use Loevgaard\Linkmobility\Response\Response;
 
 class Details extends Response
@@ -37,25 +37,35 @@ class Details extends Response
      */
     protected $state;
 
-    /**
-     * @throws InvalidResponseException
-     */
     public function init() : void
     {
-        if (isset($this->data->sendtime)) {
-            $this->sendTime = \DateTimeImmutable::createFromFormat('d-m-Y H:i:s', $this->data->sendtime);
-            if ($this->sendTime === false) {
-                throw new InvalidResponseException(
-                    '`sendtime` does not have the correct format. Value given: '.$this->data->sendtime
-                );
-            }
-        }
+        Assert::that($this->data)
+            ->isArray()->keyExists('sendtime')
+            ->keyExists('batchid')
+            ->keyExists('state')
+        ;
 
-        if (isset($this->data->batchid)) {
-            $this->batchId = (int)$this->data->batchid;
-        }
+        Assert::that($this->data['state'])->choice(self::getStates());
 
-        $this->state = $this->data->state ?? null;
+        $this->sendTime = \DateTimeImmutable::createFromFormat('d-m-Y H:i:s', $this->data['sendtime']);
+        Assert::that($this->sendTime)->isInstanceOf(\DateTimeImmutable::class, '`sendtime` does not have the correct format. Value given: '.$this->data['sendtime']);
+
+        $this->batchId = (int)$this->data['batchid'];
+        $this->state = $this->data['state'];
+    }
+
+    public static function getStates() : array
+    {
+        return [
+            self::STATE_DONE => self::STATE_DONE,
+            self::STATE_QUEUED => self::STATE_QUEUED,
+            self::STATE_RUNNING => self::STATE_RUNNING,
+        ];
+    }
+
+    public function isState(string $state) : bool
+    {
+        return $this->state === $state;
     }
 
     /**
@@ -63,7 +73,7 @@ class Details extends Response
      */
     public function isDone() : bool
     {
-        return $this->state === static::STATE_DONE;
+        return $this->isState(self::STATE_DONE);
     }
 
     /**
@@ -71,7 +81,7 @@ class Details extends Response
      */
     public function isQueued() : bool
     {
-        return $this->state === static::STATE_QUEUED;
+        return $this->isState(self::STATE_QUEUED);
     }
 
     /**
@@ -79,7 +89,7 @@ class Details extends Response
      */
     public function isRunning() : bool
     {
-        return $this->state === static::STATE_RUNNING;
+        return $this->isState(self::STATE_RUNNING);
     }
 
     /**

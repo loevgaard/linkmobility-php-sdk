@@ -8,6 +8,8 @@ return PhpCsFixer\Config::create()
         '@PSR2' => true,
         'combine_consecutive_unsets' => true,
         'array_syntax' => ['syntax' => 'short'],
+        'declare_strict_types' => true,
+        'declare_equal_normalize' => true,
         'no_unused_imports' => true,
         'no_useless_else' => true,
         'no_useless_return' => true,

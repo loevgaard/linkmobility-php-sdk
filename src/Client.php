@@ -1,12 +1,16 @@
-<?php
+<?php declare(strict_types=1);
 namespace Loevgaard\Linkmobility;
 
 use Assert\Assert;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
 use Loevgaard\Linkmobility\Request\RequestInterface;
 use Loevgaard\Linkmobility\Response\ResponseInterface;
 use Psr\Http\Message\ResponseInterface as HttpResponseInterface;
+use Symfony\Component\OptionsResolver\Exception\ExceptionInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class Client
 {
@@ -36,7 +40,12 @@ class Client
      *
      * @var HttpResponseInterface|null
      */
-    protected $lastHttpResponse;
+    protected $httpResponse;
+
+    /**
+     * @var array|string|int|bool
+     */
+    protected $response;
 
     public function __construct(string $apiKey, string $baseUrl = 'https://api.linkmobility.dk/v2')
     {
@@ -49,11 +58,13 @@ class Client
     /**
      * @param RequestInterface $request
      * @return ResponseInterface
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function request(RequestInterface $request) : ResponseInterface
     {
-        $this->rawRequest($request->getMethod(), $request->getUri(), $request->getOptions());
+        $responseClass = $request->getResponseClass();
+
+        return new $responseClass($this->rawRequest($request->getMethod(), $request->getUri(), $request->getOptions()));
     }
 
     /**
@@ -61,23 +72,39 @@ class Client
      * @param string $uri
      * @param array $options
      * @return mixed
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function rawRequest(string $method, string $uri, array $options = [])
     {
-        $client = $this->getHttpClient();
+        try {
+            // reset responses
+            $this->response = [];
+            $this->httpResponse = null;
 
-        // @todo move default options somewhere else
-        $options = array_merge($options, [
-            'headers' => [
-                'Accept' => 'application/json',
-            ],
-            'verify' => false,
-            'http_errors' => false,
-        ]);
-        $this->lastHttpResponse = $client->request($method, $this->baseUrl . $uri.'?apikey='.$this->apiKey, $options);
+            // get http client
+            $client = $this->getHttpClient();
 
-        return \GuzzleHttp\json_decode((string)$this->lastHttpResponse->getBody());
+            // resolve options
+            $resolver = new OptionsResolver();
+            $this->configureOptions($resolver);
+            $options = $resolver->resolve($options);
+
+            // create url
+            $url = $this->baseUrl . '/' . $uri . '?apikey=' . $this->apiKey;
+
+            // do request
+            $this->httpResponse = $client->request($method, $url, $options);
+
+            // parse response
+            $this->response = \GuzzleHttp\json_decode((string)$this->httpResponse->getBody(), true);
+        } catch (ExceptionInterface $e) {
+            $this->addResponseError($e, 'Symfony Options Resolver Exception');
+        } catch (GuzzleException $e) {
+            $this->addResponseError($e, 'Guzzle Exception');
+        } catch (\InvalidArgumentException $e) {
+            $this->addResponseError($e, 'JSON parse error');
+        }
+
+        return $this->response;
     }
 
     /**
@@ -106,8 +133,53 @@ class Client
      *
      * @return HttpResponseInterface|null
      */
-    public function getLastHttpResponse() : ?HttpResponseInterface
+    public function getHttpResponse() : ?HttpResponseInterface
     {
-        return $this->lastHttpResponse;
+        return $this->httpResponse;
+    }
+
+    /**
+     * @return array|bool|int|string
+     */
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
+    protected function configureOptions(OptionsResolver $resolver) : void
+    {
+        $refl = new \ReflectionClass(RequestOptions::class);
+        $requestOptions = array_values($refl->getConstants());
+        $resolver->setDefined($requestOptions);
+
+        $resolver->setDefaults([
+            RequestOptions::HEADERS => [
+                'Accept' => 'application/json',
+            ],
+            RequestOptions::CONNECT_TIMEOUT => 30,
+            RequestOptions::TIMEOUT => 120,
+            RequestOptions::HTTP_ERRORS => true
+        ]);
+    }
+
+    protected function addResponseError(\Exception $exception, string $title, ?string $detail = null) : void
+    {
+        if (!isset($this->response['errors'])) {
+            $this->response['errors'] = [];
+        }
+
+        $error = [
+            'title' => $title,
+            'detail' => $detail ? : $exception->getMessage(),
+            'meta' => [
+                'exception' => get_class($exception)
+            ]
+        ];
+
+        if ($this->httpResponse) {
+            $error['status'] = $this->httpResponse->getStatusCode();
+        }
+
+        $this->response['errors'][] = $error;
     }
 }

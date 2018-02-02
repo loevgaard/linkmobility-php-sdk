@@ -1,10 +1,9 @@
-<?php
-namespace Loevgaard\Linkmobility\Webhook;
+<?php declare(strict_types=1);
+namespace Loevgaard\Linkmobility\Response;
 
-use Loevgaard\Linkmobility\Response\BatchStatus;
 use PHPUnit\Framework\TestCase;
 
-class BatchStatusTest extends TestCase
+class BatchStatusResponseTest extends TestCase
 {
     public function testValidResponse()
     {
@@ -23,12 +22,12 @@ class BatchStatusTest extends TestCase
             "status"=> 200
         ];
 
-        $obj = json_decode(json_encode($data));
+        $obj = json_decode(json_encode($data), true);
 
-        $response = new BatchStatus($obj);
+        $response = new BatchStatusResponse($obj);
 
         $this->assertNotNull($response->getStat());
-        $this->assertInstanceOf(BatchStatus\Stat::class, $response->getStat());
+        $this->assertInstanceOf(BatchStatusResponse\Stat::class, $response->getStat());
         $this->assertEquals(
             $data['stat']['sendtime'],
             $response->getStat()->getSendTime()->format('d-m-Y H:i:s')
@@ -38,7 +37,7 @@ class BatchStatusTest extends TestCase
         $this->assertEquals($data['stat']['rejected'], $response->getStat()->getRejected());
 
         $this->assertNotNull($response->getDetails());
-        $this->assertInstanceOf(BatchStatus\Details::class, $response->getDetails());
+        $this->assertInstanceOf(BatchStatusResponse\Details::class, $response->getDetails());
         $this->assertEquals(
             $data['details']['sendtime'],
             $response->getDetails()->getSendTime()->format('d-m-Y H:i:s')
