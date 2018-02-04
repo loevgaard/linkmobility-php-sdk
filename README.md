@@ -24,7 +24,7 @@ require_once 'vendor/autoload.php';
 
 use Loevgaard\Linkmobility\Client;
 use Loevgaard\Linkmobility\Request\PostMessageRequest;
-use Loevgaard\Linkmobility\Response\BatchStatus;
+use Loevgaard\Linkmobility\Response\BatchStatusResponse;
 use Loevgaard\Linkmobility\ValueObject\Sender;
 use Loevgaard\Linkmobility\ValueObject\Message;
 use Loevgaard\Linkmobility\ValueObject\Recipient;
@@ -33,7 +33,7 @@ $request = new PostMessageRequest(new Sender('Sender'), new Message('Message'), 
 
 $client = new Client('insert api key');
 
-/** @var BatchStatus $response */
+/** @var BatchStatusResponse $response */
 $response = $client->request($request);
 
 print_r($response);
@@ -64,4 +64,3 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 [link-scrutinizer]: https://scrutinizer-ci.com/g/loevgaard/linkmobility-php-sdk/code-structure
 [link-code-quality]: https://scrutinizer-ci.com/g/loevgaard/linkmobility-php-sdk
 [link-author]: https://github.com/loevgaard
-[link-contributors]: ../../contributors
