@@ -137,7 +137,7 @@ class Client
      *
      * @return HttpResponseInterface|null
      */
-    public function getHttpResponse() : ?HttpResponseInterface
+    public function getHttpResponse()
     {
         return $this->httpResponse;
     }
