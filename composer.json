@@ -1,7 +1,7 @@
 {
-    "name": "loevgaard/linkmobility-php-sdk",
+    "name": "riskogab/linkmobility-php-sdk",
     "type": "library",
-    "description": "PHP SDK for Linkmobility API",
+    "description": "Forked repository of PHP SDK for Linkmobility API by Joachim Løvgaard",
     "keywords": [
         "linkmobility",
         "php",
@@ -9,25 +9,24 @@
         "sms gateway",
         "sdk"
     ],
-    "homepage": "https://github.com/loevgaard/linkmobility-php-sdk",
+    "homepage": "https://github.com/riskogab/linkmobility-php-sdk",
     "license": "MIT",
     "authors": [
         {
-            "name": "Joachim Løvgaard",
-            "email": "joachim@loevgaard.dk",
-            "homepage": "http://www.loevgaard.dk"
+            "name": "Gabor Risko",
+            "email": "riskogab@gmail.com"
         }
     ],
     "require": {
-        "php": "^7.0",
+        "php": "^7.0||^8.0",
         "beberlei/assert": "^2.7",
         "guzzlehttp/guzzle": "~6.2",
         "psr/http-message": "~1.0",
         "symfony/options-resolver": "^3.0|^4.0"
     },
     "require-dev": {
-        "phpunit/phpunit" : "~5.7||~6.0",
-        "friendsofphp/php-cs-fixer": "^2.0"
+        "phpunit/phpunit" : "^10",
+        "friendsofphp/php-cs-fixer": "^3.0"
     },
     "autoload": {
         "psr-4": {
