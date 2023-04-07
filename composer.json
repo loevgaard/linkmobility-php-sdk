@@ -1,7 +1,7 @@
 {
     "name": "riskogab/linkmobility-php-sdk",
     "type": "library",
-    "description": "PHP SDK for Linkmobility API",
+    "description": "Forked repository of PHP SDK for Linkmobility API by Joachim Løvgaard",
     "keywords": [
         "linkmobility",
         "php",
@@ -9,13 +9,12 @@
         "sms gateway",
         "sdk"
     ],
-    "homepage": "https://github.com/loevgaard/linkmobility-php-sdk",
+    "homepage": "https://github.com/riskogab/linkmobility-php-sdk",
     "license": "MIT",
     "authors": [
         {
-            "name": "Joachim Løvgaard",
-            "email": "joachim@loevgaard.dk",
-            "homepage": "http://www.loevgaard.dk"
+            "name": "Gabor Risko",
+            "email": "riskogab@gmail.com"
         }
     ],
     "require": {
